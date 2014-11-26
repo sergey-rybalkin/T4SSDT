@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("DataProvider code generator")]
-[assembly: AssemblyDescription("Data access logic layer design time code generator")]
+[assembly: AssemblyTitle("T4 Generators")]
+[assembly: AssemblyDescription("Collection of custom T4 text transformations.")]
 [assembly: AssemblyCulture("")]

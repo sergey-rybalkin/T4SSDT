@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using DataProvider.Schema;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TextTemplating;
+using T4Generators.Database.Schema;
 
-namespace DataProvider
+namespace T4Generators.Database
 {
     /// <summary>
     /// Extends standard text transformation class with functionality specific to the database model.

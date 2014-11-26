@@ -1,4 +1,4 @@
-﻿namespace DataProvider
+﻿namespace T4Generators.Database
 {
     /// <summary>
     /// Defines interface for building method body.

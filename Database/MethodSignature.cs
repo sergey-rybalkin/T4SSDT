@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DataProvider.Schema;
+using T4Generators.Database.Schema;
 
-namespace DataProvider
+namespace T4Generators.Database
 {
     /// <summary>
     /// Contains information required to create method definition.

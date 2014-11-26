@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Text;
-using DataProvider.Schema;
+using T4Generators.Database.Schema;
 
-namespace DataProvider
+namespace T4Generators.Database
 {
     internal class CreateMethodBuilder : MethodBuilderBase, IMethodBuilder
     {

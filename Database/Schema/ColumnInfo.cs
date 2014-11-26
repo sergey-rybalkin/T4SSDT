@@ -1,4 +1,4 @@
-﻿namespace DataProvider.Schema
+﻿namespace T4Generators.Database.Schema
 {
     /// <summary>
     /// Contains database column information.

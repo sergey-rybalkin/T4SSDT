@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace DataProvider.Schema
+namespace T4Generators.Database.Schema
 {
     internal class DatabaseSchema
     {

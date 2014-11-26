@@ -1,4 +1,4 @@
-Data Provider Generator
+T4Generators
 =====================
 
-Custom T4 template host that provides helper methods for generating Dapper.net wrapper for *.dacpac based database schema.
+Collection of custom T4 text transformations that provide additional API for generating code based on different datasources like *.dacpac files or ASP.NET Web API routing.

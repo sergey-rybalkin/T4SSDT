@@ -15,6 +15,8 @@ namespace T4Generators.Database.Schema
         {
         }
 
+        internal ViewInfo[] Views { get; private set; }
+
         internal TableInfo[] Tables { get; private set; }
 
         internal IndexInfo[] Indexes { get; private set; }
@@ -23,10 +25,14 @@ namespace T4Generators.Database.Schema
         {
             DatabaseSchema retVal = new DatabaseSchema();
             var tableModels = model.GetObjects(DacQueryScopes.All, ModelSchema.Table).ToArray();
-            retVal.Tables = new TableInfo[tableModels.Count()];
-
+            retVal.Tables = new TableInfo[tableModels.Length];
             for (int i = 0; i < tableModels.Length; i++)
                 retVal.Tables[i] = GetSchemaForTable(tableModels[i]);
+
+            var viewModels = model.GetObjects(DacQueryScopes.All, ModelSchema.View).ToArray();
+            retVal.Views = new ViewInfo[viewModels.Length];
+            for (int i = 0; i < viewModels.Length; i++)
+                retVal.Views[i] = GetSchemaForView(viewModels[i]);
 
             var keys = model.GetObjects(DacQueryScopes.All, ModelSchema.PrimaryKeyConstraint).ToArray();
             UpdatePrimaryKeysInformation(retVal.Tables, keys);
@@ -37,7 +43,7 @@ namespace T4Generators.Database.Schema
             {
                 var index = indexes[i];
                 string tableName = index.Name.Parts[1];
-                TableInfo targetTable = retVal.Tables.FirstOrDefault(t => t.TableName == tableName);
+                TableInfo targetTable = retVal.Tables.FirstOrDefault(t => t.ShortName == tableName);
                 if (null == targetTable)
                 {
                     throw new InvalidOperationException(
@@ -61,38 +67,12 @@ namespace T4Generators.Database.Schema
             return retVal;
         }
 
-        private static void UpdatePrimaryKeysInformation(TableInfo[] tables, TSqlObject[] keys)
-        {
-            // Get schema for all primary keys
-            foreach (var key in keys)
-            {
-                string keyName = key.Name.Parts[1];
-                string tableName = keyName.Substring(3);
-                var columns = key.GetReferenced(PrimaryKeyConstraint.Columns).ToArray();
-                var primaryKeyColumns = new ColumnInfo[columns.Length];
-
-                for (int i = 0; i < primaryKeyColumns.Length; i++)
-                {
-                    primaryKeyColumns[i] = GetSchemaForColumn(columns[i]);
-                }
-
-                var targetTable = tables.FirstOrDefault(t => t.TableName == tableName);
-                if (null == targetTable)
-                {
-                    throw new InvalidOperationException(
-                        "Could not find target table for primary key " + key.Name);
-                }
-
-                targetTable.PrimaryKey = primaryKeyColumns;
-            }
-        }
-
         private static TableInfo GetSchemaForTable(TSqlObject model)
         {
             TableInfo retVal = new TableInfo();
             retVal.EntityName = _pluralizationService.Singularize(model.Name.Parts[1]);
-            retVal.TableName = model.Name.Parts[1];
-            retVal.FullTableName = model.Name.ToString();
+            retVal.ShortName = model.Name.Parts[1];
+            retVal.FullName = model.Name.ToString();
 
             var columns = model.GetReferenced(Table.Columns).ToArray();
             retVal.Columns = new ColumnInfo[columns.Length];
@@ -102,6 +82,42 @@ namespace T4Generators.Database.Schema
                 retVal.Columns[i] = column;
                 if (columns[i].GetProperty<bool>(Column.IsIdentity))
                     retVal.IdentityColumn = column;
+            }
+
+            return retVal;
+        }
+
+        private static ViewInfo GetSchemaForView(TSqlObject model)
+        {
+            ViewInfo retVal = new ViewInfo();
+            retVal.ShortName = model.Name.Parts[1];
+            retVal.FullName = model.Name.ToString();
+
+            var columns = model.GetReferenced(View.Columns).ToArray();
+            retVal.Columns = new ColumnInfo[columns.Length];
+            for (int i = 0; i < columns.Length; i++)
+            {
+                TSqlObject column = columns[i];
+                string dataType = "nvarchar";
+                bool isNullable = column.GetProperty<bool>(Column.Nullable);
+                int length = column.GetProperty<int>(Column.Length);
+
+                TSqlObject referencedColumn = column.GetReferenced().FirstOrDefault();
+                if (null != referencedColumn)
+                {
+                    TSqlObject type = referencedColumn.GetReferenced(Column.DataType).First();
+                    dataType = type.Name.Parts[0];
+                }
+
+                retVal.Columns[i] = new ColumnInfo
+                {
+                    Name = column.Name.Parts[2],
+                    FullName = column.Name.ToString(),
+                    SqlDataType = dataType,
+                    ClrType = GetTypeMapping(dataType, isNullable),
+                    Nullable = isNullable,
+                    Length = length
+                };
             }
 
             return retVal;
@@ -123,6 +139,32 @@ namespace T4Generators.Database.Schema
                 Nullable = isNullable,
                 Length = length
             };
+        }
+
+        private static void UpdatePrimaryKeysInformation(TableInfo[] tables, TSqlObject[] keys)
+        {
+            // Get schema for all primary keys
+            foreach (var key in keys)
+            {
+                string keyName = key.Name.Parts[1];
+                string tableName = keyName.Substring(3);
+                var columns = key.GetReferenced(PrimaryKeyConstraint.Columns).ToArray();
+                var primaryKeyColumns = new ColumnInfo[columns.Length];
+
+                for (int i = 0; i < primaryKeyColumns.Length; i++)
+                {
+                    primaryKeyColumns[i] = GetSchemaForColumn(columns[i]);
+                }
+
+                var targetTable = tables.FirstOrDefault(t => t.ShortName == tableName);
+                if (null == targetTable)
+                {
+                    throw new InvalidOperationException(
+                        "Could not find target table for primary key " + key.Name);
+                }
+
+                targetTable.PrimaryKey = primaryKeyColumns;
+            }
         }
 
         private static string GetTypeMapping(string sqlTypeName, bool isNullable)

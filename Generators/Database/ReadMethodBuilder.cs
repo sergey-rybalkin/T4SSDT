@@ -33,7 +33,7 @@ namespace T4Generators.Database
             buffer.AppendFormat(
                 "return connection.Query<{0}>(\"SELECT * FROM {1} WHERE {2} = @{3}\", new {{ {3} }})",
                 _table.EntityName,
-                _table.FullTableName,
+                _table.FullName,
                 _table.IdentityColumn.FullName,
                 parameter.Key);
 

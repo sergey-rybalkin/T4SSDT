@@ -32,7 +32,7 @@ namespace T4Generators.Database
 
             buffer.AppendFormat("return connection.Query<{0}>(\"SELECT * FROM {1} WHERE ",
                                 _index.Table.EntityName,
-                                _index.Table.FullTableName);
+                                _index.Table.FullName);
             buffer.Append(string.Join(" AND ", signature.Parameters.Select(p => p.Key + " = @" + p.Key)));
             buffer.Append("\", new { ");
             buffer.Append(string.Join(", ", signature.Parameters.Select(p => p.Key)));

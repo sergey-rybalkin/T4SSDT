@@ -39,7 +39,7 @@ namespace T4Generators.Database
             buffer.AppendLine("{");
             buffer.AppendLine("connection.Open();");
 
-            buffer.AppendFormat("return connection.Execute(\"UPDATE {0} SET ", _table.FullTableName);
+            buffer.AppendFormat("return connection.Execute(\"UPDATE {0} SET ", _table.FullName);
             buffer.Append(string.Join(", ", targetColumns.Select(c => string.Format("{0} = @{0}", c.Name))));
             buffer.Append(" WHERE ");
             buffer.Append(string.Join(" AND ", filter.Select(f => string.Format("{0} = @{0}", f))));

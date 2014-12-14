@@ -1,0 +1,1 @@
+﻿CREATE INDEX [I_Repositories_ProjectKey] ON [dbo].[Repositories](ProjectKey)

@@ -29,7 +29,7 @@ namespace T4Generators.Database
             buffer.AppendLine("{");
             buffer.AppendLine("connection.Open();");
 
-            buffer.AppendFormat("return connection.Execute(\"DELETE FROM {0} WHERE ", _table.FullTableName);
+            buffer.AppendFormat("return connection.Execute(\"DELETE FROM {0} WHERE ", _table.FullName);
             buffer.Append(string.Join(" AND ",
                                       signature.Parameters.Select(p => string.Format("{0} = @{0}", p.Key))));
             buffer.Append("\", new { ");

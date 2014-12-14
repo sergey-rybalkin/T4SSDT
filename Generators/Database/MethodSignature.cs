@@ -124,7 +124,7 @@ namespace T4Generators.Database
                 : string.Format("IEnumerable<{0}>", index.Table.EntityName);
 
             string name = string.Format("Get{0}",
-                                        index.Unique ? index.Table.EntityName : index.Table.TableName);
+                                        index.Unique ? index.Table.EntityName : index.Table.ShortName);
 
             Dictionary<string, string> parameters = new Dictionary<string, string>(index.Columns.Length);
             foreach (var column in index.Columns)

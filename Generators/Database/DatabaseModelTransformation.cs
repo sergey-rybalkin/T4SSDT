@@ -14,11 +14,19 @@ namespace T4Generators.Database
         private DatabaseSchema _schema;
 
         /// <summary>
-        /// Gets tables available in the database.i
+        /// Gets tables available in the database.
         /// </summary>
         public IEnumerable<TableInfo> Tables
         {
             get { return _schema.Tables; }
+        }
+
+        /// <summary>
+        /// Gets views available in the database.
+        /// </summary>
+        public IEnumerable<ViewInfo> Views
+        {
+            get { return _schema.Views; }
         }
 
         public IEnumerable<IndexInfo> Indexes

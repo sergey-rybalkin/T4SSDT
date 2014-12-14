@@ -33,7 +33,7 @@ namespace T4Generators.Database
             {
                 buffer.AppendFormat("{0} newId = connection.ExecuteScalar<{0}>(\"",
                                     _table.IdentityColumn.ClrType);
-                buffer.AppendFormat("INSERT INTO {0} VALUES(", _table.FullTableName);
+                buffer.AppendFormat("INSERT INTO {0} VALUES(", _table.FullName);
 
                 var targetColumns = _table.Columns.Where(c => c != _table.IdentityColumn).ToArray();
                 buffer.Append(ColumnsToSqlParameters(targetColumns));
@@ -43,7 +43,7 @@ namespace T4Generators.Database
             else
             {
                 buffer.Append("_connection.Execute(\"");
-                buffer.AppendFormat("INSERT INTO {0} VALUES(", _table.FullTableName);
+                buffer.AppendFormat("INSERT INTO {0} VALUES(", _table.FullName);
 
                 buffer.Append(ColumnsToSqlParameters(_table.Columns));
                 buffer.AppendLine(")\", item);");

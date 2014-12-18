@@ -26,9 +26,9 @@ namespace Data
         TopIssuesReport,
     }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class Build
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class Build
+    {
         public int BuildId { get; set; }
         public short RepositoryId { get; set; }
         public DateTime BuildDate { get; set; }
@@ -39,18 +39,18 @@ namespace Data
         public byte DepthOfInheritance { get; set; }
         public short ClassCoupling { get; set; }
         public int LinesOfCode { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class IssueOwner
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class IssueOwner
+    {
         public short UserId { get; set; }
         public int IssueId { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class Issue
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class Issue
+    {
         public int IssueId { get; set; }
         public int BuildId { get; set; }
         public int LineNumber { get; set; }
@@ -58,28 +58,28 @@ namespace Data
         public string IssueCode { get; set; }
         public string Message { get; set; }
         public string ProjectName { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class ModuleCoverage
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class ModuleCoverage
+    {
         public int BuildId { get; set; }
         public string ModuleName { get; set; }
         public decimal BlocksCoveredPercent { get; set; }
         public decimal LinesCoveredPercent { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class Project
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class Project
+    {
         public string ProjectKey { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class Repository
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class Repository
+    {
         public short RepositoryId { get; set; }
         public string ProjectKey { get; set; }
         public string BranchName { get; set; }
@@ -87,62 +87,62 @@ namespace Data
         public bool Deploy { get; set; }
         public bool RunTests { get; set; }
         public bool Analyze { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class TestResult
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class TestResult
+    {
         public int BuildId { get; set; }
         public string TestName { get; set; }
         public bool Succeeded { get; set; }
         public int DurationMilliseconds { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class User
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class User
+    {
         public short UserId { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
         public byte[] HashedPassword { get; set; }
         public DateTime Created { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class HallOfShameReportItem
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class HallOfShameReportItem
+    {
         public string UserName { get; set; }
         public DateTime? Created { get; set; }
         public byte? GlobalRole { get; set; }
         public string IssuesCount { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class RepositoriesStatusReportItem
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class RepositoriesStatusReportItem
+    {
         public string ProjectKey { get; set; }
         public string BranchName { get; set; }
         public DateTime? LastAnalyzed { get; set; }
         public byte? ResultCode { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class TodaysBuildsReportItem
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class TodaysBuildsReportItem
+    {
         public string ProjectKey { get; set; }
         public string BranchName { get; set; }
         public string AnalyzedAt { get; set; }
         public byte? ResultCode { get; set; }
-	}
+    }
 
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class TopIssuesReportItem
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class TopIssuesReportItem
+    {
         public string IssueCode { get; set; }
         public string SampleMessage { get; set; }
         public string ToolCode { get; set; }
         public string Severity { get; set; }
-	}
+    }
 
     [GeneratedCode("DapperGenerator", "1.0")]
     public partial interface IDataProvider
@@ -339,3 +339,4 @@ namespace Data
         }
     }    
 }
+

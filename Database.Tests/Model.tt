@@ -1,9 +1,11 @@
 ﻿<#@ template debug="false" hostspecific="true" inherits="T4Generators.Database.DatabaseModelTransformation" language="C#" #>
 <#@ output extension=".Generated.cs" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="EnvDTE" #>
 <#@ assembly name="System.Data" #>
 <#@ assembly name="$(SolutionDir)Generators\bin\Debug\T4Generators.dll" #>
 <#@ import namespace="System.IO" #>
+<#@ import namespace="EnvDTE" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="T4Generators.Database" #>
@@ -25,12 +27,26 @@ using Common.Configuration;
 namespace Data
 {
 <#
-    string dacpacPath = Host.ResolvePath(@"..\Database\bin\Debug\Database.dacpac");
+    var hostServiceProvider = (IServiceProvider)this.Host;
+    var dte = (DTE)hostServiceProvider.GetService(typeof(DTE));
+    Project databaseProject = null;
+    List<string> targetScripts = new List<string>(64);
 
-    if (!File.Exists(dacpacPath))
-        Error("Please build database project. Could not find package" + dacpacPath);
-	
-    Initialize(dacpacPath);
+    foreach (Project project in dte.Solution)
+    {
+        if (project.Kind == "{00d1a9c2-b5f0-4af3-8072-f6c62b433612}")
+        {
+            databaseProject = project;
+            break;
+        }
+    }
+    
+    if (null == databaseProject)
+        Error("Database project was not found!");
+
+    IterateThroughProjectItems(databaseProject.ProjectItems, targetScripts);
+
+    Initialize(targetScripts);
 
 /**************************************** ENUMS GENERATOR ***************************************************/
 #>
@@ -52,14 +68,14 @@ namespace Data
 <#
 
 /**************************************** POCO GENERATOR ****************************************************/
-	foreach (var table in Tables)
-	{
-		if (ExcludeFromPOCO.Contains(table.ShortName))
-			continue;
+    foreach (var table in Tables)
+    {
+        if (ExcludeFromPOCO.Contains(table.ShortName))
+            continue;
 #>
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class <#= table.EntityName #>
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class <#= table.EntityName #>
+    {
 <#
         PushIndent("        ");
         foreach (var column in table.Columns)
@@ -71,19 +87,19 @@ namespace Data
 
         ClearIndent();
 #>
-	}
+    }
 
 <#
-	}
+    }
 /******************************************** VIEW RESULTS POCOs ********************************************/
     foreach (var view in Views)
     {
         if (ExcludeFromPOCO.Contains(view.ShortName))
-			continue;
+            continue;
 #>
-	[GeneratedCode("DapperGenerator", "1.0")]
-	public partial class <#= view.ShortName #>Item
-	{
+    [GeneratedCode("DapperGenerator", "1.0")]
+    public partial class <#= view.ShortName #>Item
+    {
 <#
         PushIndent("        ");
         foreach (var column in view.Columns)
@@ -95,7 +111,7 @@ namespace Data
 
         ClearIndent();    
 #>
-	}
+    }
 
 <#
     }
@@ -177,3 +193,23 @@ namespace Data
         }
     }    
 }
+
+<#+
+private void IterateThroughProjectItems(ProjectItems items, List<string> scripts)
+{
+    foreach (ProjectItem item in items)
+    {
+        // Ignore non-DDL scripts
+        if (item.Name == "Scripts")
+            continue;
+
+        if ((0 == string.Compare(item.Kind, EnvDTE.Constants.vsProjectItemKindPhysicalFolder, true)) &&
+            item.ProjectItems != null)
+        {
+            IterateThroughProjectItems(item.ProjectItems, scripts);
+        }
+        else if (item.Name.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            scripts.Add(item.FileNames[0]);
+    }
+}
+#>

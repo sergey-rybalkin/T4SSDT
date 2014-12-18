@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TextTemplating;
@@ -47,6 +48,23 @@ namespace T4Generators.Database
 
             using (model)
             {
+                _schema = DatabaseSchema.FromModel(model);
+            }
+        }
+
+        /// <summary>
+        /// Initializes host with database objects from the specified database scripts.
+        /// </summary>
+        /// <param name="sqlScripts">Collection of database script names to parse.</param>
+        public void Initialize(IList<string> sqlScripts)
+        {
+            using (TSqlModel model = new TSqlModel(SqlServerVersion.Sql120, new TSqlModelOptions()))
+            {
+                foreach (string script in sqlScripts)
+                {
+                    model.AddObjects(File.ReadAllText(script));
+                }
+
                 _schema = DatabaseSchema.FromModel(model);
             }
         }

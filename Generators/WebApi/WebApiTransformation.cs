@@ -11,7 +11,8 @@ namespace T4Generators.WebApi
 {
     /// <summary>
     /// Extends standard text transformation class and adds helper methods for working with
-    /// <see cref="ApiExplorer" /> interface.
+    /// <see cref="ApiExplorer" /> interface. Can be used to generated statically typed JavaScript wrapper for
+    /// web api.
     /// </summary>
     public abstract class WebApiTransformation : TextTransformation
     {

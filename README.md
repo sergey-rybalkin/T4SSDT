@@ -13,8 +13,8 @@ Add `T4SSDT.ttinclude` file to the target Visual Studio project and make sure th
 paths to SSDT DLLs (usually located inside of the Visual Studio installation folder) and start using its APIs
 in your own templates.
 
-See `examples` folder to get an idea on how to use this project. [Model.tt](examples/Model/Model.tt) is a
-sample POCO model generator for tables, views and user-defined table types. [Repository.tt](examples/Model/Repository.tt)
+See `examples` folder to get an idea on how to use this project. [Model.tt](samples/Model/Model.tt) is a
+sample POCO model generator for tables, views and user-defined table types. [Repository.tt](samples/Model/Repository.tt)
 is a sample Repository pattern implementation generator in pure ADO.NET that generates CRUD operations, views 
 and stored procedure calls.
 

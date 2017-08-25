@@ -1,0 +1,303 @@
+<#@ assembly name="System.Core" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.Dac.dll" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.Dac.Extensions.dll" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.TransactSql.ScriptDom.dll" #>
+<#@ assembly name="System.Data.Entity.Design" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="EnvDTE" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data.Entity.Design.PluralizationServices" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="Microsoft.SqlServer.Dac" #>
+<#@ import namespace="Microsoft.SqlServer.Dac.Model" #>
+<#@ import namespace="Microsoft.SqlServer.TransactSql.ScriptDom" #>
+<#+
+
+// Helper service that can be used to convert plural table name into singular class name, e.g. Users -> User
+PluralizationService Singularizer = PluralizationService.CreateService(new CultureInfo("en"));
+
+/****************************************** GENERATOR SETUP ********************************************/
+private TSqlModel GenerateModelFromProjectItems(ProjectItems items)
+{
+    TSqlModel retVal = new TSqlModel(SqlServerVersion.Sql130, new TSqlModelOptions());
+    
+    AddScriptsToModelRecursive(items, retVal);
+
+    return retVal;
+}
+
+private void AddScriptsToModelRecursive(ProjectItems items, TSqlModel model)
+{
+    foreach (ProjectItem item in items)
+    {
+        // Ignore non-DDL scripts
+        if (item.Name == "Scripts")
+            continue;
+
+        if ((0 == string.Compare(item.Kind, EnvDTE.Constants.vsProjectItemKindPhysicalFolder, true)) &&
+            item.ProjectItems != null)
+        {
+            AddScriptsToModelRecursive(item.ProjectItems, model);
+        }
+        else if (item.Name.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            model.AddObjects(File.ReadAllText(item.FileNames[0]));
+    }
+}
+
+/****************************************** POCO AND CRUD HELPERS **************************************/
+public struct ColumnInfo
+{
+    public ColumnInfo(string fullName, string fieldName, string type, bool isNullable, bool isIdentity, TSqlObject raw)
+    {
+        FullName = fullName;
+        FieldName = fieldName;
+        TypeName = type;
+        IsNullable = isNullable;
+        IsIdentity = isIdentity;
+        Raw = raw;
+    }
+
+    public string FullName { get; }
+    public string FieldName { get; }
+    public string TypeName { get; }
+    public bool IsNullable { get; }
+    public bool IsIdentity { get; }
+    public TSqlObject Raw { get; }
+}
+
+private void ForEachTable(
+    TSqlModel model,
+    Action<string, ColumnInfo[], ColumnInfo[]> renderer,
+    IEnumerable<string> exclude = null)
+{
+    var tables = model.GetObjects(DacQueryScopes.All, ModelSchema.Table).ToArray();
+
+    foreach (var table in tables)
+    {
+        if (null != exclude && exclude.Contains(table.Name.ToString()))
+            continue;
+
+        ColumnInfo[] pkColumns = null;
+        string entityName = Singularizer.Singularize(table.Name.Parts[1]);
+        var primaryKey = table.GetReferencing(PrimaryKeyConstraint.Host, DacQueryScopes.UserDefined)
+                              .FirstOrDefault();
+        if (null != primaryKey)
+        {
+            pkColumns = primaryKey.GetReferenced(PrimaryKeyConstraint.Columns)
+                                  .Select(c => ExtractColumnInfo(c, table.ObjectType))
+                                  .ToArray();
+        }
+
+        renderer(
+            entityName,
+            table.GetReferenced(Table.Columns)
+			     .Where(c => !exclude.Contains(c.Name.ToString()))
+                 .Select(c => ExtractColumnInfo(c, table.ObjectType))
+                 .ToArray(),
+            pkColumns);
+    }    
+}
+
+private void ForEachView(
+    TSqlModel model,
+    Action<string, ColumnInfo[], ColumnInfo[]> renderer,
+    IEnumerable<string> exclude = null)
+{
+    var views = model.GetObjects(DacQueryScopes.All, ModelSchema.View).ToArray();
+
+    foreach (var view in views)
+    {
+        if (null != exclude && exclude.Contains(view.Name.ToString()))
+            continue;
+
+        string entityName = Singularizer.Singularize(view.Name.Parts[1]);
+        renderer(
+            entityName,
+            view.GetReferenced(View.Columns)
+                .Select(c => ExtractColumnInfo(c, view.ObjectType)).ToArray(),
+            null);
+    }    
+}
+
+private void ForEachTableType(
+    TSqlModel model,
+    Action<string, ColumnInfo[]> renderer,
+    IEnumerable<string> exclude = null)
+{
+    var targetObjects = model.GetObjects(DacQueryScopes.All, ModelSchema.TableType).ToArray();
+
+    foreach (var target in targetObjects)
+    {
+        if (null != exclude && exclude.Contains(target.Name.ToString()))
+            continue;
+
+        string entityName = Singularizer.Singularize(target.Name.Parts[1]);
+        renderer(entityName, target.GetReferenced(TableType.Columns).Select(c => ExtractColumnInfo(c, target.ObjectType)).ToArray());
+    }    
+}
+
+private ColumnInfo ExtractColumnInfo(TSqlObject column, ModelTypeClass baseObject)
+{
+    string fieldName = column.Name.Parts[2];
+    string fullName = column.Name.ToString();
+    string dataType = "nvarchar";
+    bool isNullable = false;
+    bool isIdentity = false;
+
+    TSqlObject type;
+    switch (baseObject.Name)
+    {
+        case "Table":
+            type = column.GetReferenced(Column.DataType).FirstOrDefault();
+            dataType = type.Name.Parts[0];
+            isNullable = column.GetProperty<bool>(Column.Nullable);
+            isIdentity = Column.IsIdentity.GetValue<bool>(column);
+            break;
+        case "View":
+            TSqlObject referencedColumn = column.GetReferenced().FirstOrDefault();
+            if (null != referencedColumn)
+            {
+                type = referencedColumn.GetReferenced(Column.DataType).First();
+                dataType = type.Name.Parts[0];
+                isNullable = referencedColumn.GetProperty<bool>(Column.Nullable);
+            }
+            break;
+        case "TableType":
+            type = column.GetReferenced(TableTypeColumn.DataType).FirstOrDefault();
+            if (null != type)
+            {
+                dataType = type.Name.Parts[0];
+                isNullable = column.GetProperty<bool>(TableTypeColumn.Nullable);
+            }
+            break;
+    }
+
+    return new ColumnInfo(fullName, fieldName, GetTypeMapping(dataType, isNullable), isNullable, isIdentity, column);
+}
+
+private static string GetTypeMapping(string sqlTypeName, bool isNullable)
+{
+    if (sqlTypeName.EndsWith("char"))
+        return "string";
+
+    string sysType = "string";
+    switch (sqlTypeName)
+    {
+        case "bigint":
+            sysType = "long" + (isNullable ? "?" : string.Empty);
+            break;
+        case "smallint":
+            sysType = "short" + (isNullable ? "?" : string.Empty);
+            break;
+        case "int":
+            sysType = "int" + (isNullable ? "?" : string.Empty);
+            break;
+        case "uniqueidentifier":
+            sysType = "Guid" + (isNullable ? "?" : string.Empty);
+            break;
+        case "smalldatetime":
+        case "datetime":
+        case "datetime2":
+        case "date":
+            sysType = "DateTime" + (isNullable ? "?" : string.Empty);
+            break;
+        case "time":
+            sysType = "TimeSpan" + (isNullable ? "?" : string.Empty);
+            break;
+        case "float":
+            sysType = "double" + (isNullable ? "?" : string.Empty);
+            break;
+        case "real":
+            sysType = "float" + (isNullable ? "?" : string.Empty);
+            break;
+        case "numeric":
+        case "smallmoney":
+        case "decimal":
+        case "money":
+            sysType = "decimal" + (isNullable ? "?" : string.Empty);
+            break;
+        case "tinyint":
+            sysType = "byte" + (isNullable ? "?" : string.Empty);
+            break;
+        case "bit":
+            sysType = "bool" + (isNullable ? "?" : string.Empty);
+            break;
+        case "image":
+        case "binary":
+        case "varbinary":
+        case "timestamp":
+            sysType = "byte[]";
+            break;
+        case "geography":
+            sysType = "Microsoft.SqlServer.Types.SqlGeography" + (isNullable ? "?" : string.Empty);
+            break;
+        case "geometry":
+            sysType = "Microsoft.SqlServer.Types.SqlGeometry" + (isNullable ? "?" : string.Empty);
+            break;
+    }
+
+    return sysType;
+}
+
+private static string ToCamelCase(string name)
+{
+    return char.ToLowerInvariant(name[0]) + name.Substring(1);
+}
+
+/****************************************** STORED PROCEDURE HELPERS ***********************************/
+public struct ParameterInfo
+{
+    public ParameterInfo(string name, string type, bool isOutput, TSqlObject raw)
+    {
+        Name = name;
+        TypeName = type;
+        IsOutput = isOutput;
+        Raw = raw;
+    }
+
+    public string Name { get; }
+    public string TypeName { get; }
+    public bool IsOutput {get; }
+    public TSqlObject Raw { get; }
+}
+
+private static ParameterInfo GetProcedureParameterInfo(TSqlObject parameter)
+{
+	string name = parameter.Name.Parts.Last().Trim('@');
+	bool isOutput = Parameter.IsOutput.GetValue<bool>(parameter);
+	bool isNullable = Parameter.IsNullable.GetValue<bool>(parameter);
+	var dataType = parameter.GetReferenced(Parameter.DataType).First();
+	string dataTypeName;
+	
+	if (dataType.ObjectType.Name == "TableType")
+		dataTypeName = "DataTable";
+	else
+		dataTypeName = GetTypeMapping(dataType.Name.Parts[0], isNullable);
+
+	return new ParameterInfo(name, dataTypeName, isOutput, parameter);
+}
+
+private void ForEachStoredProcedure(
+    TSqlModel model,
+    Action<string, ParameterInfo[]> renderer,
+    IEnumerable<string> exclude = null)
+{
+    TSqlObject[] targetObjects = model.GetObjects(DacQueryScopes.All, ModelSchema.Procedure).ToArray();
+
+    foreach (var target in targetObjects)
+    {
+        if (null != exclude && exclude.Contains(target.Name.ToString()))
+            continue;
+
+        string entityName = target.Name.Parts[1];
+        renderer(
+            entityName,
+            target.GetReferenced(Procedure.Parameters)
+                  .Select(p => GetProcedureParameterInfo(p))
+                  .ToArray());
+    }    
+}
+#>

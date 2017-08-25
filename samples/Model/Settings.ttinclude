@@ -1,0 +1,18 @@
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+
+// Tables, columns and views from this list will be ignored during POCO generation.
+public static HashSet<string> ExcludeFromPOCO = new HashSet<string>()
+{
+    "[dbo].[UsersInRoles]",
+	"[dbo].[Users].[GlobalRole]"
+};
+
+// Tables, columns and views from this list will be ignored during CRUD operations generation.
+public static HashSet<string> ExcludeFromCRUD = new HashSet<string>()
+{
+    "[dbo].[UsersInRoles]"
+};
+
+#>

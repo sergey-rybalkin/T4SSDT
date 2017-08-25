@@ -18,3 +18,5 @@ sql
 "Import Script Logs"
 packages
 FakesAssemblies
+.vs
+*.dbmdl

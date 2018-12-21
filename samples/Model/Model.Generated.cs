@@ -10,6 +10,36 @@ using System.Data;
 namespace Model
 {
     [GeneratedCode("T4SSDT", "1.0")]
+    public partial struct TypeMappingTestsTarget
+    {
+        public int Id { get; set; }
+        public long? BigIntColumn { get; set; }
+        public bool? BitColumn { get; set; }
+        public decimal? DecimalColumn { get; set; }
+        public short? SmallIntColumn { get; set; }
+        public byte? TinyIntColumn { get; set; }
+        public decimal? MoneyColumn { get; set; }
+        public decimal? SmallMoneyColumn { get; set; }
+        public double? FloatColumn { get; set; }
+        public float? RealColumn { get; set; }
+        public DateTime? DateColumn { get; set; }
+        public DateTimeOffset? DateTimeOffsetColumn { get; set; }
+        public DateTime? DateTime2Column { get; set; }
+        public DateTime? SmallDateTimeColumn { get; set; }
+        public DateTime? DateTimeColumn { get; set; }
+        public TimeSpan? TimeColumn { get; set; }
+        public string CharColumn { get; set; }
+        public string NCharColumn { get; set; }
+        public string VarcharColumn { get; set; }
+        public string NVarcharColumn { get; set; }
+        public byte[] BinaryColumn { get; set; }
+        public byte[] VarbinaryColumn { get; set; }
+        public string HierarchyidColumn { get; set; }
+        public Guid? GuidColumn { get; set; }
+        public string XmlColumn { get; set; }
+    }
+
+    [GeneratedCode("T4SSDT", "1.0")]
     public partial struct User
     {
         public short UserId { get; set; }
@@ -20,11 +50,18 @@ namespace Model
     }
 
     [GeneratedCode("T4SSDT", "1.0")]
+    public partial struct NullableColumnsView
+    {
+        public string UserName { get; set; }
+        public short? RoleId { get; set; }
+    }
+
+    [GeneratedCode("T4SSDT", "1.0")]
     public partial struct UserRole
     {
         public string UserName { get; set; }
-        public DateTime Created { get; set; }
-        public short RoleId { get; set; }
+        public DateTime? Created { get; set; }
+        public short? RoleId { get; set; }
     }
 
     [GeneratedCode("T4SSDT", "1.0")]

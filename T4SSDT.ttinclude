@@ -1,9 +1,9 @@
 <#@ assembly name="System.Core" #>
 <#@ assembly name="EnvDTE" #>
 <#@ assembly name="System.Data" #>
-<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.Dac.dll" #>
-<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.Dac.Extensions.dll" #>
-<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130\Microsoft.SqlServer.TransactSql.ScriptDom.dll" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\150\Microsoft.SqlServer.Dac.dll" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\150\Microsoft.SqlServer.Dac.Extensions.dll" #>
+<#@ assembly name="C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\150\Microsoft.SqlServer.TransactSql.ScriptDom.dll" #>
 <#@ assembly name="System.Data.Entity.Design" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="EnvDTE" #>
@@ -162,7 +162,7 @@ private ColumnInfo ExtractColumnInfo(TSqlObject column, ModelTypeClass baseObjec
             {
                 type = referencedColumn.GetReferenced(Column.DataType).First();
                 dataType = type.Name.Parts[0];
-                isNullable = referencedColumn.GetProperty<bool>(Column.Nullable);
+                isNullable = true;
             }
             break;
         case "TableType":
@@ -204,6 +204,9 @@ private static string GetTypeMapping(string sqlTypeName, bool isNullable)
         case "date":
             sysType = "DateTime" + (isNullable ? "?" : string.Empty);
             break;
+		case "datetimeoffset":
+			sysType = "DateTimeOffset" + (isNullable ? "?" : string.Empty);
+			break;
         case "time":
             sysType = "TimeSpan" + (isNullable ? "?" : string.Empty);
             break;

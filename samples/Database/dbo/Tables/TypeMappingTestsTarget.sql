@@ -1,0 +1,28 @@
+﻿CREATE TABLE [dbo].[TypeMappingTestsTarget]
+(
+    [Id] INT NOT NULL PRIMARY KEY,
+    [BigIntColumn] BIGINT NULL,
+    [BitColumn] BIT NULL,
+    [DecimalColumn] DECIMAL(18, 9) NULL,
+    [SmallIntColumn] SMALLINT NULL,
+    [TinyIntColumn] TINYINT NULL,
+    [MoneyColumn] MONEY NULL,
+    [SmallMoneyColumn] SMALLMONEY NULL,
+    [FloatColumn] FLOAT NULL,
+    [RealColumn] REAL NULL,
+    [DateColumn] DATE NULL,
+    [DateTimeOffsetColumn] DATETIMEOFFSET,
+    [DateTime2Column] DATETIME2(0),
+    [SmallDateTimeColumn] SMALLDATETIME,
+    [DateTimeColumn] DATETIME,
+    [TimeColumn] TIME,
+    [CharColumn] CHAR(10),
+    [NCharColumn] NCHAR(10),
+    [VarcharColumn] VARCHAR(10),
+    [NVarcharColumn] NVARCHAR(10),
+    [BinaryColumn] BINARY(10),
+    [VarbinaryColumn] VARBINARY(10),
+    [HierarchyidColumn] HIERARCHYID,
+    [GuidColumn] UNIQUEIDENTIFIER,
+    [XmlColumn] XML
+)

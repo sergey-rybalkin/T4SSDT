@@ -8,7 +8,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{d2d87ec0-e231-420b-9a87-c1c4e4cbd481}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql140DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
@@ -69,5 +69,7 @@
     <Build Include="dbo\Views\UserRoles.sql" />
     <Build Include="dbo\StoredProcedure\TestProcedure.sql" />
     <Build Include="dbo\TableValuedTypes\TestTableType.sql" />
+    <Build Include="dbo\Tables\TypeMappingTestsTarget.sql" />
+    <Build Include="dbo\Views\NullableColumnsView.sql" />
   </ItemGroup>
 </Project>
